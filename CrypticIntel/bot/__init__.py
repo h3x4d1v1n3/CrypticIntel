@@ -79,6 +79,9 @@ class CrypticIntel(discord.Client):
 
             # iterate through channel and coins
             for channel_id in set(self.channel_config):
+                if (self.channel_config[channel_id]['is_active'] is False):
+                    continue
+                
                 channel = self.get_channel(channel_id)
                 print()
                 for coin in set(self.channel_config[channel_id]['funds']):

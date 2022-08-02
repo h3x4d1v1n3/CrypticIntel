@@ -7,8 +7,8 @@ def ma_cross_remix(self, coin, candles, channel_id):
     rsi = ta.RSI(candles['close'][:-1], 14)
     plus_di, minus_di, _ = ta.DMI(candles['high'][:-1], candles['low'][:-1], candles['close'][:-1], 14)
 
-    buy_condition = (ta.CROSSOVER(fast_ma, slow_ma)) & (plus_di > minus_di) & (rsi < 60)
-    sell_condition = ta.CROSSUNDER(fast_ma, slow_ma) | (rsi > 70)
+    buy_condition = (fast_ma > slow_ma) & (plus_di > minus_di) & (rsi < 60)
+    sell_condition = (fast_ma < slow_ma) | (rsi > 70)
 
     order = {}
     msg = ''

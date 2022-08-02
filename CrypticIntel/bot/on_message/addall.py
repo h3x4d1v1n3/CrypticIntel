@@ -11,7 +11,7 @@ async def addall(self, msg):
         for coin_info in coins_info['symbols']:
             if collateral == coin_info['symbol'][-len(collateral):] and collateral in collaterals:
                 if self.channel_config[channel_id]['funds'].get(coin_info['symbol']) is None:
-                    self.channel_config[channel_id]['funds'][coin_info['symbol']] = 0
+                    self.channel_config[channel_id]['funds'][coin_info['symbol']] = {'initial_investment':0, 'current_investment':0}
                     is_added = True
 
         if not is_added:

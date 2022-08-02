@@ -19,9 +19,9 @@ async def send_balance_sheet(self, channel_id):
             balance_sheet += f"{collateral} : {round(self.channel_config[channel_id]['collateral'][collateral],2)}\n"
 
     for coin in list(self.channel_config[channel_id]['funds']):
-        if self.channel_config[channel_id]['funds'][coin] > 0:
-            balance += self.channel_config[channel_id]['funds'][coin]
-            balance_sheet += f"{coin} : {round(self.channel_config[channel_id]['funds'][coin], 2)}\n"
+        if self.channel_config[channel_id]['funds'][coin].get('current_investment') is not None and self.channel_config[channel_id]['funds'][coin]['current_investment'] > 0:
+            balance += self.channel_config[channel_id]['funds'][coin]['current_investment']
+            balance_sheet += f"{coin} : {round(self.channel_config[channel_id]['funds'][coin]['current_investment'], 2)}\n"
 
     if balance == 0:
         return

@@ -11,6 +11,6 @@ def add_coins_by(self, channel_id):
         coins = eval(add_by)(self, limit)
         for coin in coins:
             if self.channel_config[channel_id]['funds'].get(coin) is None:
-                self.channel_config[channel_id]['funds'][coin] = 0
+                self.channel_config[channel_id]['funds'][coin] = {'initial_investment':0, 'current_investment':0}
     else:
-        print('invalid add by function')
+        print('invalid addby function')

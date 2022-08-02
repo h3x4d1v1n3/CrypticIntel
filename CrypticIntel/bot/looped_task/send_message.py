@@ -24,7 +24,7 @@ async def send_message(self, coin, order, channel_id, amount=0, msg=''):
             discord_threads[channel_id][coin]['hold_msg'] = None
 
         status_msg = discord.Embed(title='Order Details')
-        status_msg.description = f">>> Bought at : ${order['buy_at']}\nInvested amount : ${round(self.channel_config[channel_id]['funds'][coin], 2)}"
+        status_msg.description = f">>> Bought at : ${order['buy_at']}\nInvested amount : ${round(self.channel_config[channel_id]['funds'][coin]['initial_investment'], 2)}"
         status_msg.color = 0x39ff14
 
         print(discord_threads[channel_id][coin])

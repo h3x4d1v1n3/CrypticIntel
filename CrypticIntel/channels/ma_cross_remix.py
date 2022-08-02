@@ -1,6 +1,5 @@
 import technical_analysis as ta
 
-
 def ma_cross_remix(self, coin, candles, channel_id):
     slow_ma = ta.EMA(candles['close'][:-1], 26)
     fast_ma = ta.EMA(candles['close'][:-1], 9)

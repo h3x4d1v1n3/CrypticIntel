@@ -14,7 +14,7 @@ async def add(self, msg):
             coin = coin.upper()
             if valid_coins.get(coin) == True:
                 if self.channel_config[channel_id]['funds'].get(coin) is None:
-                    self.channel_config[channel_id]['funds'][coin] = 0
+                    self.channel_config[channel_id]['funds'][coin] = {'initial_investment':0, 'current_investment':0}
                     is_added = True
                         
 

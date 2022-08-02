@@ -1,51 +1,42 @@
-buying_capacity = {}
-coin_min_buying_capacity = 10
+from CrypticIntel.bot.on_message.deposit import deposit
+
+# bought_at
 
 def place_order(self, coin, order, channel_id):
-    if buying_capacity.get(channel_id) is None:
-        buying_capacity[channel_id] = {}
-    if buying_capacity[channel_id].get(coin) is None:
-        buying_capacity[channel_id][coin] = {'max' : self.max_buying_capacity, 'current' : 0}
+    deposited_fund = self.channel_config[channel_id]['collateral'][self.collateral]
+    investment_fund = self.channel_config[channel_id]['funds'][coin]['current_investment']
+    buying_capacity_percent = 10
+    # min_buying_capacity = 10   # not dynamic
+    # self.leverage = 1
+    if order.get('leverage') is not None:
+        self.leverage = int(order.get('leverage'))
 
+    # buy condition
     if order['side'] == 'buy':
-        if self.channel_config[channel_id]['collateral'][self.collateral] >= self.min_buying_capacity:
-            if buying_capacity[channel_id][coin]['max'] >= self.min_buying_capacity:
-
-                buying_capacity[channel_id][coin]['current'] = buying_capacity[channel_id][coin]['max'] + self.channel_config[channel_id]['collateral'][self.collateral]%self.min_buying_capacity
-                if buying_capacity[channel_id][coin]['current'] > self.channel_config[channel_id]['collateral'][self.collateral]:
-                    buying_capacity[channel_id][coin]['current'] = buying_capacity[channel_id][coin]['max']
-                if buying_capacity[channel_id][coin]['current'] > self.channel_config[channel_id]['collateral'][self.collateral]:
-                    buying_capacity[channel_id][coin]['current'] = self.channel_config[channel_id]['collateral'][self.collateral]
-
-                if buying_capacity[channel_id][coin]['current'] > buying_capacity[channel_id][coin]['max']:
-                    buying_capacity[channel_id][coin]['max'] = buying_capacity[channel_id][coin]['current']
-
-                print('investing amount - '+str(buying_capacity[channel_id][coin]['current']))
-                self.channel_config[channel_id]['collateral'][self.collateral] -= buying_capacity[channel_id][coin]['current']
-                self.channel_config[channel_id]['funds'][coin] = buying_capacity[channel_id][coin]['current']
-                return True, self.channel_config[channel_id]['funds'][coin]
-            
-    # check the sell condition
+        investment_fund = deposited_fund*self.leverage*buying_capacity_percent/100
+        # not a dynamic check - not depending on rules of binance (has static min_buying_capacity)
+        if investment_fund > self.min_buying_capacity:
+            self.channel_config[channel_id]['funds'][coin] = {}
+            self.channel_config[channel_id]['funds'][coin]['initial_investment'] = investment_fund
+            self.channel_config[channel_id]['funds'][coin]['current_investment'] = investment_fund
+            self.channel_config[channel_id]['collateral'][self.collateral] -= investment_fund
+            return True, investment_fund
+        else:
+            self.channel_config[channel_id]['funds'][coin] = {}
+            self.channel_config[channel_id]['funds'][coin]['initial_investment'] = self.min_buying_capacity
+            self.channel_config[channel_id]['funds'][coin]['current_investment'] = self.min_buying_capacity
+            self.channel_config[channel_id]['collateral'][self.collateral] -= self.min_buying_capacity
+            return True, self.min_buying_capacity
+    # sell condition
     elif order['side'] == 'sell':
-        if buying_capacity[channel_id][coin]['max'] < self.channel_config[channel_id]['funds'][coin]:
-            buying_capacity[channel_id][coin]['max'] = self.channel_config[channel_id]['funds'][coin]
-        
-        sell_amount = self.channel_config[channel_id]['funds'][coin]
-        self.channel_config[channel_id]['funds'][coin] = 0
-        self.channel_config[channel_id]['collateral'][self.collateral] += sell_amount
-        # buying_capacity[channel_id].pop(coin)
-        return True, sell_amount
-
+        self.channel_config[channel_id]['collateral'][self.collateral] += investment_fund
+        self.channel_config[channel_id]['funds'][coin]['initial_investment'] = 0
+        self.channel_config[channel_id]['funds'][coin]['current_investment'] = 0
+        return True, investment_fund
+    # hold condition
     elif order['side'] == 'hold':
-        leverage = 1
-        # try:
-        if order.get('leverage') is not None:
-            leverage = int(order.get('leverage'))
-        # except ValueError:
-        #     leverage = 1
-            
-        self.channel_config[channel_id]['funds'][coin] = buying_capacity[channel_id][coin]['current']*leverage*order['price']/order['buy_at']
-        return True, self.channel_config[channel_id]['funds'][coin]
+        self.channel_config[channel_id]['funds'][coin]['current_investment'] = self.channel_config[channel_id]['funds'][coin]['initial_investment']*order['price']/order['buy_at']
+        return True, self.channel_config[channel_id]['funds'][coin]['current_investment']
 
     return False, -1
 

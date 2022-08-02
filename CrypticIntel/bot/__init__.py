@@ -26,7 +26,7 @@ class CrypticIntel(discord.Client):
         self.orders = {}
         self.collateral = 'USDT'
         self.min_buying_capacity = 10
-        self.max_buying_capacity = 20
+        self.leverage = 1
         self.add_by = {}
 
         self.blacklisted_coins = []
@@ -81,7 +81,7 @@ class CrypticIntel(discord.Client):
             for channel_id in set(self.channel_config):
                 if (self.channel_config[channel_id]['is_active'] is False):
                     continue
-                
+
                 channel = self.get_channel(channel_id)
                 print()
                 for coin in set(self.channel_config[channel_id]['funds']):

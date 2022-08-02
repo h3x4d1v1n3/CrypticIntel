@@ -1,0 +1,6 @@
+git+https://github.com/h3x4d1v1n3/technical_analysis
+git+https://github.com/Rapptz/discord.py
+numpy
+pandas
+python-binance
+pycoingecko

@@ -1,0 +1,1 @@
+worker: python CrypticIntel/main.py

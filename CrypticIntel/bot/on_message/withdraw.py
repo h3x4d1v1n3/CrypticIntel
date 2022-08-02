@@ -2,7 +2,7 @@ async def withdraw(self, msg):
     channel_id = msg.channel.id
     try:
         cmd = msg.content.split(' ')
-        fund = float(cmd[-1])
+        fund = int(cmd[-1])
         if fund <= 0:
             raise ValueError
 

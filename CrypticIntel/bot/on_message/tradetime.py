@@ -1,6 +1,3 @@
-"""
-command : tradetime 15:00 15:30
-"""
 async def tradetime(self, msg):
     channel_id = msg.channel.id
     try:
@@ -15,5 +12,5 @@ async def tradetime(self, msg):
             raise ValueError
     except IndexError:
         if self.debug:
-            print('Invalid Tradetime Command')
-        await msg.reply('Invalid Tradetime Command')
+            print('Invalid Command')
+        await msg.reply('Invalid Command')

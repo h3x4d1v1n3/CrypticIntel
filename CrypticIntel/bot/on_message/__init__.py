@@ -12,5 +12,6 @@ from .removeall import removeall
 from .remove import remove
 from .getcoins import getcoins
 from .activate import activate
+from .deactivate import deactivate
 from .setinterval import setinterval
 from .clear import clear

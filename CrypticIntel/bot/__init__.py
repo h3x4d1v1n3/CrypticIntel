@@ -3,6 +3,7 @@ from discord.ext import tasks
 import asyncio
 import datetime
 import binance
+import time
 
 from CrypticIntel.channels import *
 from .config import BLACKLISTED_COINS
@@ -17,6 +18,7 @@ class CrypticIntel(discord.Client):
         intents=discord.Intents.default()
         intents.members = True
         super().__init__(intents=discord.Intents.all())
+        self.discord_threads={}
         self.binance_client = binance.Client()
         self.channel_config = {}
         self.debug = debug
@@ -25,7 +27,7 @@ class CrypticIntel(discord.Client):
         self.ADD_COINS_BY_PATH = './CrypticIntel/bot/looped_task/add_coins/by'
         self.orders = {}
         self.collateral = 'USDT'
-        self.min_buying_capacity = 10
+        self.min_buying_capacity = 20
         self.leverage = 1
         self.add_by = {}
 
@@ -79,12 +81,13 @@ class CrypticIntel(discord.Client):
 
             # iterate through channel and coins
             for channel_id in set(self.channel_config):
-                if (self.channel_config[channel_id]['is_active'] is False):
-                    continue
 
                 channel = self.get_channel(channel_id)
                 print()
                 for coin in set(self.channel_config[channel_id]['funds']):
+                    if (self.channel_config[channel_id]['is_active'] is False):
+                        continue
+
                     print('--', end='')
                     # added coin should be valid one (final check)
                     if valid_coins.get(coin) is not True and self.channel_config[channel_id]['funds'].get(coin) is not None:
@@ -95,9 +98,9 @@ class CrypticIntel(discord.Client):
                     if self.channel_config[channel_id]['funds'].get(coin) is None or str(channel) not in channels:
                         continue
                     # if usdt is less than buying capacity and check for whether coin is already bought or not if not exit else proceed to check hold or sell condition
-                    # check this - seems good
-                    if self.channel_config[channel_id]['collateral'][self.collateral] < self.min_buying_capacity and self.orders[channel_id].get(coin) is None:
+                    if self.channel_config[channel_id]['collateral'][self.collateral] <= self.min_buying_capacity and self.channel_config[channel_id]['funds'][coin]['initial_investment'] == 0:
                         continue
+
                     if coin in self.blacklisted_coins and self.channel_config[channel_id]['funds'].get(coin) is not None:
                         self.channel_config[channel_id]['funds'].pop(coin)
                         continue
@@ -106,22 +109,27 @@ class CrypticIntel(discord.Client):
                     candles = get_candles(self.binance_client, coin, self.channel_config[channel_id]['candle_interval'], 1000)
                     # apply strategies
                     order, msg = eval(str(channel))(self, coin, candles, channel_id)
+                    # check order
                     if order != {}:
+                        # logging
                         print('\n'+coin + ' ' + str(channel)+' '+self.channel_config[channel_id]['candle_interval'])
                         print(order)
                         # need to work on placing real orders
+                        order_is_placed = False
+                        # if order placed in given time or order is sell or hold
+                        print(check_tradetime(self.channel_config[channel_id]['tradetime']['from'], self.channel_config[channel_id]['tradetime']['to']))
                         if check_tradetime(self.channel_config[channel_id]['tradetime']['from'], self.channel_config[channel_id]['tradetime']['to']) or (order['side'] == 'sell' or order['side'] == 'hold'):
-                            order_is_placed, amount = place_order(self, coin, order, channel_id)
-
+                            # get confirmation and invested amount
+                            order_is_placed, amount, self.channel_config = place_order(coin, order, channel_id, self.channel_config, self.collateral, self.min_buying_capacity, self.leverage)
+                            # if order is placed send msg
                             if order_is_placed:
-                                print(f'order placed - {order_is_placed}')
-                                print('sending msg')
-                                # change name from send message to something else we are creating threads
+                                print(f'order is placed')
                                 await send_message(self, coin, order, channel_id, amount, msg)
-                            else:
-                                print('removing unplaced order')
-                                if self.orders[channel_id].get(coin) is not None:
-                                    self.orders[channel_id].pop(coin)
+                        # if order not placed because 1. insufficient balance 2. buy order in invalid time interval 3.sell condition - check saved order and remove
+                        if not order_is_placed or self.orders[channel_id].get(coin) == 'sell' :
+                            self.orders[channel_id].pop(coin)
+                            print(f"Removed - {coin}")
+                        
                     # sleep this thread to check other thread
                     await asyncio.sleep(0.01)
                 # send total invested and non invested fund
@@ -129,7 +137,7 @@ class CrypticIntel(discord.Client):
                 # sleep this thread to check other thread
                 await asyncio.sleep(0.1)
 
-            # await asyncio.sleep(1)
+            await asyncio.sleep(5)
 
         loop_task.start()
 

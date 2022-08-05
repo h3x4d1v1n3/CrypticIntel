@@ -2,10 +2,14 @@ import discord
 
 balance_sheet_message = {}
 async def send_balance_sheet(self, channel_id):
+    
     if balance_sheet_message.get(channel_id) is None:
         balance_sheet_message[channel_id] = {}
     elif balance_sheet_message[channel_id].get('message') is not None:
         # try:
+        if len(self.channel_config[channel_id]['funds']) == 0:
+            return
+            
         await balance_sheet_message[channel_id]['message'].delete()
         balance_sheet_message[channel_id]['message']=None
         # except discord.errors.NotFound:

@@ -3,3 +3,5 @@ import os
 DISCORD_BOT_API = os.environ.get('DISCORD_BOT_API')
 INITIAL_FUND = 0
 BLACKLISTED_COINS = ['USDT', 'USDC', 'BUSD', 'UST', 'DOGE', 'SHIB', 'DAI', 'TUSD']
+
+MAIN_MESSAGE_COLOR = 0X2FF7F1 # Fluorescent Blue

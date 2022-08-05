@@ -26,7 +26,7 @@ def ma_cross_remix(self, coin, candles, channel_id):
             order = self.orders[channel_id][coin]
             order['side'] = 'sell'
             order['price'] = candles['close'][-1]
-            self.orders[channel_id].pop(coin)
+            # self.orders[channel_id].pop(coin)
         else:
             self.orders[channel_id][coin]['side'] = 'hold'
             self.orders[channel_id][coin]['price'] = candles['close'][-1]
